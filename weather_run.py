@@ -4,6 +4,7 @@ from HTMLTestRunner import HTMLTestRunner
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
+from selenium import webdriver
 
 import os
 from testcase.home_page_testcase import home_page_case_search
@@ -30,6 +31,8 @@ from testcase.home_page_testcase import home_page_case_navigation
 #         print(msg)
 
 # #构造测试集合(采用discover()方法动态添加，运行顺序根据包、类、方法的命名ASCII码依次排序,并且使用HTMLTestRun)
+
+driver = webdriver.Firefox()
 
 
 def sendmail(new_file):
@@ -64,21 +67,28 @@ def new_report(test_report):
 
 
 if __name__ == '__main__':
-    test_dir = 'D:\\Weathertest\\testcase'
-    test_report = 'D:\\Weathertest\\test_report'
-    discover = unittest.defaultTestLoader.discover(test_dir, pattern='home*.py')
+    try:
+        test_dir = 'D:\\Weathertest\\testcase'
+        test_report = 'D:\\Weathertest\\test_report'
+        discover = unittest.defaultTestLoader.discover(test_dir, pattern='home*.py')
 
-    # 定义报告的存放路径
-    now = time.strftime("%Y-%m-%d %H_%M_%S")
-    filename = 'D:\\Weathertest\\test_report\\' + now + 'result.html'
-    fp = open(filename, 'wb')
+        # 定义报告的存放路径
+        now = time.strftime("%Y-%m-%d %H_%M_%S")
+        filename = 'D:\\Weathertest\\test_report\\' + now + 'result.html'
+        fp = open(filename, 'wb')
 
-    # 定义测试报告
-    runner = HTMLTestRunner(stream=fp,
-                            title='天气测试报告',
-                            description='用例执行情况：')
-    runner.run(discover)
-    fp.close()
+        # 定义测试报告
+        runner = HTMLTestRunner(stream=fp,
+                                title='天气测试报告',
+                                description='用例执行情况：')
+        runner.run(discover)
+        fp.close()
 
-    NewReport = new_report(test_report)
-    sendmail(NewReport) #发送测试报告
+        NewReport = new_report(test_report)
+        sendmail(NewReport)  # 发送测试报告
+    except Exception as msg:
+        """进行截图"""
+        # now = time.strftime("%Y-%m-%d %H_%M_%S")
+        # file_error_screenshot = 'D:\\Weathertest\\test_error_screen\\' + now + 'error_png.png'
+        # driver.get_screenshot_as_file(file_error_screenshot)
+        print(msg)
