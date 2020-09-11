@@ -1,41 +1,44 @@
-import re
 import unittest
 # 此py文件用来描写导航条点击跳转的case
 from testcase.MyTest_SetAndTear import MyTest_SetAndTear
 import time
-import lxml
-from lxml import html
+from test_data import ReadWeather_datafile
 
 
 class MyTest_Weather_HomePageAttribute(MyTest_SetAndTear):
     """首页加载成功后的必要元素判断"""
+    # 获取首页必要元素
+    HomePage_Atr = ReadWeather_datafile.ReadFile().ReadWeather_HomePage_Atr('WeatherHomePageAtr.csv')
 
     def view_homepage(self):
         self.driver.get(self.baseurl)
 
-    def test_homepage_Atr(self):
+    def CheckDataSuccess(self, PageAtr):
+        try:
+            self.assertIn(PageAtr, self.HomePage_Atr, msg='模块加载失败，元素为%s' % PageAtr)
+        except Exception as msg:
+            now = time.strftime("%Y-%m-%d %H_%M_%S")
+            file_error_screenshot = 'D:\\Weathertest\\test_error_screen\\' + now + 'AtrError_png.png'
+            self.driver.get_screenshot_as_file(file_error_screenshot)
+            print(msg)
+
+    def test_homepage_PageTitle(self):
+        """页面title加载"""
         self.view_homepage()
-        # # 获取当前页面的html
-        # html = self.driver.execute_script("return document.documentElement.outerHTML")
-        # print(html)
+        PointTitle = self.driver.title
+        self.CheckDataSuccess(PointTitle)
 
-        # 获取页面源代码
-        html_source = self.driver.page_source
-        MyHtml = lxml.html.fromstring(html_source)
-        # 获取标签下所有文本
-        items = MyHtml.xpath("//div[@id='y_prodsingle']//text()")
-        # 正则 匹配以下内容 \s+ 首空格 \s+$ 尾空格 \n 换行
-        pattern = re.compile("^\s+|\s+$|\n")
+    def test_homepage_Atr_24hWeather(self):
+        """首页24h天气模块加载"""
+        self.view_homepage()
+        PointTitle = self.driver.find_element_by_xpath("//div[@class='hours24-data-th']/span").text
+        self.CheckDataSuccess(PointTitle)
 
-        clause_text = ""
-        for item in items:
-            # 将匹配到的内容用空替换，即去除匹配的内容，只留下文本
-            line = re.sub(pattern, "", item)
-            if len(line) > 0:
-                clause_text += line + "\n"
-        #
-        #
-        print(clause_text)
+    def test_homepage_Atr_HistoryWea(self):
+        """历史访问或热门天气模块"""
+        self.view_homepage()
+        PointTitle = self.driver.find_element_by_xpath("//span[@id='search-city-tips']").text
+        self.CheckDataSuccess(PointTitle)
 
 
 if __name__ == '__main__':
